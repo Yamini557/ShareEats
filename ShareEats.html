@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShareEats - Fight Hunger, Share Food</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #4ade80 0%, #3b82f6 100%);
+        }
+        .food-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .auth-modal {
+            backdrop-filter: blur(5px);
+        }
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .slide-in {
+            animation: slideIn 0.5s forwards;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .activity-tab.active {
+            border-bottom: 3px solid #4ade80;
+            color: #4ade80;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="font-sans bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-utensils text-green-500 text-2xl mr-2"></i>
+                        <span class="font-bold text-xl text-gray-800">ShareEats</span>
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="#" onclick="showPage('home')" class="nav-link active">Home</a>
+                    <a href="#" onclick="showPage('donate')" class="nav-link">Donate</a>
+                    <a href="#" onclick="showPage('receive')" class="nav-link">Receive</a>
+                    <a href="#" onclick="showPage('profile')" class="nav-link">Profile</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="showAuthModal('login')" class="px-4 py-2 text-gray-600 hover:text-gray-800">Login</button>
+                    <button onclick="showAuthModal('register')" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition">Register</button>
+                    <button class="md:hidden" onclick="toggleMobileMenu()">
+                        <i class="fas fa-bars text-gray-600 text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile menu -->
+        <div id="mobileMenu" class="hidden md:hidden bg-white pb-4 px-4">
+            <a href="#" onclick="showPage('home')" class="block py-2 text-gray-800 hover:text-green-500">Home</a>
+            <a href="#" onclick="showPage('donate')" class="block py-2 text-gray-800 hover:text-green-500">Donate</a>
+            <a href="#" onclick="showPage('receive')" class="block py-2 text-gray-800 hover:text-green-500">Receive</a>
+            <a href="#" onclick="showPage('profile')" class="block py-2 text-gray-800 hover:text-green-500">Profile</a>
+        </div>
+    </nav>
+
+    <!-- Auth Modals -->
+    <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center hidden auth-modal">
+        <div class="absolute inset-0 bg-black opacity-50"></div>
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md z-50 overflow-hidden slide-in">
+            <div class="px-6 py-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 id="authModalTitle" class="text-xl font-bold text-gray-800">Login</h3>
+                    <button onclick="hideAuthModal()" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <form id="authForm">
+                    <div id="registerFields" class="hidden">
+                        <div class="mb-4">
+                            <label class="block text-gray-700 mb-2" for="name">Full Name</label>
+                            <input type="text" id="name" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-2" for="email">Email</label>
+                            <input type="email" id="email" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-gray-700 mb-2" for="password">Password</label>
+                            <input type="password" id="password" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                        </div>
+                        <button type="button" onclick="handleAuth()" id="authButton" class="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 transition mb-4">
+                            Login
+                        </button>
+                        <div id="authToggle" class="text-center text-sm text-gray-600">
+                            Don't have an account? <button type="button" onclick="toggleAuthType()" class="text-green-500 hover:underline">Register</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main>
+            <!-- Home Page -->
+            <div id="home" class="page">
+                <!-- Hero Section -->
+                <section class="gradient-bg text-white py-20">
+                    <div class="max-w-6xl mx-auto px-4">
+                        <div class="flex flex-col md:flex-row items-center">
+                            <div class="md:w-1/2 mb-10 md:mb-0">
+                                <h1 class="text-4xl md:text-5xl font-bold mb-4">Fight Hunger, Share Food</h1>
+                                <p class="text-xl mb-8">Join ShareEats to connect surplus food with those who need it most in your community.</p>
+                                <div class="flex space-x-4">
+                                    <button onclick="showAuthModal('register')" class="px-6 py-3 bg-white text-green-600 rounded-md font-semibold hover:bg-gray-100 transition pulse-animation">
+                                        Get Started
+                                    </button>
+                                    <button onclick="showPage('donate')" class="px-6 py-3 border border-white text-white rounded-md font-semibold hover:bg-white hover:text-green-600 transition">
+                                        Donate Now
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="md:w-1/2 flex justify-center">
+                                <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" alt="Food sharing" class="rounded-lg shadow-xl max-w-full h-auto">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Stats Section -->
+                <section class="py-16 bg-white">
+                    <div class="max-w-6xl mx-auto px-4">
+                        <div class="text-center mb-12">
+                            <h2 class="text-3xl font-bold text-gray-800 mb-4">Our Impact</h2>
+                            <p class="text-gray-600 max-w-2xl mx-auto">Join thousands of people who are making a difference in their communities</p>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <div class="bg-gray-50 p-6 rounded-lg text-center">
+                                <div class="text-green-500 text-4xl mb-4">
+                                    <i class="fas fa-utensils"></i>
+                                </div>
+                                <h3 class="text-2xl font-bold text-gray-800 mb-2">10,000+</h3>
+                                <p class="text-gray-600">Meals Shared</p>
+                            </div>
+                            <div class="bg-gray-50 p-6 rounded-lg text-center">
+                                <div class="text-green-500 text-4xl mb-4">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <h3 class="text-2xl font-bold text-gray-800 mb-2">5,000+</h3>
+                                <p class="text-gray-600">Active Users</p>
+                            </div>
+                            <div class="bg-gray-50 p-6 rounded-lg text-center">
+                                <div class="text-green-500 text-4xl mb-4">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <h3 class="text-2xl font-bold text-gray-800 mb-2">50+</h3>
+                                <p class="text-gray-600">Cities Covered</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- How It Works -->
+                <section class="py-16 bg-gray-50">
+                    <div class="max-w-6xl mx-auto px-4">
+                        <div class="text-center mb-12">
+                            <h2 class="text-3xl font-bold text-gray-800 mb-4">How ShareEats Works</h2>
+                            <p class="text-gray-600 max-w-2xl mx-auto">Simple steps to make a difference in your community</p>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mb-4 mx-auto">
+                                    <span class="text-green-600 text-2xl font-bold">1</span>
+                                </div>
+                                <h3 class="text-xl font-semibold text-gray-800 mb-2 text-center">List Your Food</h3>
+                                <p class="text-gray-600 text-center">Share details about the food you want to donate - what it is, quantity, and pickup location.</p>
+                            </div>
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mb-4 mx-auto">
+                                    <span class="text-green-600 text-2xl font-bold">2</span>
+                                </div>
+                                <h3 class="text-xl font-semibold text-gray-800 mb-2 text-center">Connect</h3>
+                                <p class="text-gray-600 text-center">Our system matches your donation with nearby individuals or organizations in need.</p>
+                            </div>
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mb-4 mx-auto">
+                                    <span class="text-green-600 text-2xl font-bold">3</span>
+                                </div>
+                                <h3 class="text-xl font-semibold text-gray-800 mb-2 text-center">Make an Impact</h3>
+                                <p class="text-gray-600 text-center">Arrange for pickup or delivery and know you've helped reduce waste and fight hunger.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Testimonials -->
+                <section class="py-16 bg-white">
+                    <div class="max-w-6xl mx-auto px-4">
+                        <div class="text-center mb-12">
+                            <h2 class="text-3xl font-bold text-gray-800 mb-4">What People Say</h2>
+                            <p class="text-gray-600 max-w-2xl mx-auto">Hear from our community members</p>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="bg-gray-50 p-6 rounded-lg">
+                                <div class="flex items-center mb-4">
+                                    <div class="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center text-white font-bold mr-4">JD</div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">John Doe</h4>
+                                        <p class="text-gray-600 text-sm">Restaurant Owner</p>
+                                    </div>
+                                </div>
+                                <p class="text-gray-700">"ShareEats has helped us redirect our surplus food to those in need instead of throwing it away. It's simple to use and we've built great relationships in our community."</p>
+                                <div class="flex mt-4 text-yellow-400">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 p-6 rounded-lg">
+                                <div class="flex items-center mb-4">
+                                    <div class="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold mr-4">SM</div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">Sarah Miller</h4>
+                                        <p class="text-gray-600 text-sm">Community Volunteer</p>
+                                    </div>
+                                </div>
+                                <p class="text-gray-700">"As someone who works with food insecure families, ShareEats has been a game-changer. We can now quickly find and access food donations in our area, making our work much more efficient."</p>
+                                <div class="flex mt-4 text-yellow-400">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Call to Action -->
+                <section class="py-16 gradient-bg text-white">
+                    <div class="max-w-6xl mx-auto px-4 text-center">
+                        <h2 class="text-3xl font-bold mb-6">Ready to Make a Difference?</h2>
+                        <p class="text-xl mb-8 max-w-2xl mx-auto">Join ShareEats today and start sharing food in your community.</p>
+                        <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                            <button onclick="showAuthModal('register')" class="px-8 py-3 bg-white text-green-600 rounded-md font-semibold hover:bg-gray-100 transition">
+                                Sign Up Free
+                            </button>
+                            <button onclick="showPage('donate')" class="px-8 py-3 border border-white text-white rounded-md font-semibold hover:bg-white hover:text-green-600 transition">
+                                Donate Food
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Donate Page -->
+            <div id="donate" class="page hidden">
+                <section class="py-12 bg-white">
+                    <div class="max-w-4xl mx-auto px-4">
+                        <div class="mb-8">
+                            <h2 class="text-3xl font-bold text-gray-800 mb-2">Donate Food</h2>
+                            <p class="text-gray-600">Share details about the food you want to donate</p>
+                        </div>
+                        
+                        <form id="donateForm" class="bg-gray-50 p-6 rounded-lg shadow-sm">
+                            <div class="mb-6">
+                                <label class="block text-gray-700 font-medium mb-2" for="foodName">Food Item</label>
+                                <input type="text" id="foodName" placeholder="e.g., Fresh vegetables, Cooked meals, Packaged goods" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                            </div>
+                            
+                            <div class="mb-6">
+                                <label class="block text-gray-700 font-medium mb-2" for="foodType">Food Type</label>
+                                <select id="foodType" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                                    <option value="">Select food type</option>
+                                    <option value="fresh">Fresh (fruits, vegetables)</option>
+                                    <option value="cooked">Cooked meals</option>
+                                    <option value="packaged">Packaged goods</option>
+                                    <option value="bakery">Bakery items</option>
+                                    <option value="dairy">Dairy products</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-6">
+                                <label class="block text-gray-700 font-medium mb-2" for="quantity">Quantity</label>
+                                <div class="flex items-center">
+                                    <input type="number" id="quantity" min="1" value="1" class="w-20 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                                    <select id="quantityUnit" class="ml-2 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                                        <option value="servings">Servings</option>
+                                        <option value="kg">Kilograms</option>
+                                        <option value="lbs">Pounds</option>
+                                        <option value="units">Units</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-6">
+                                <label class="block text-gray-700 font-medium mb-2" for="expiry">Expiry/Pickup By</label>
+                                <input type="date" id="expiry" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                            </div>
+                            
+                            <div class="mb-6">
+                                <label class="block text-gray-700 font-medium mb-2" for="location">Pickup Location</label>
+                                <input type="text" id="location" placeholder="Enter address or drop pin on map" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 mb-2">
+                                <div class="h-48 bg-gray-200 rounded-md flex items-center justify-center">
+                                    <i class="fas fa-map-marker-alt text-gray-400 text-3xl"></i>
+                                    <span class="ml-2 text-gray-500">Map will appear here</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-6">
+                                <label class="block text-gray-700 font-medium mb-2" for="notes">Additional Notes</label>
+                                <textarea id="notes" rows="3" placeholder="Any special instructions, dietary information, etc." class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
+                            </div>
+                            
+                            <div class="flex justify-end">
+                                <button type="button" onclick="submitDonation()" class="px-6 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition">
+                                    Submit Donation
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Receive Page -->
+            <div id="receive" class="page hidden">
+                <section class="py-12 bg-white">
+                    <div class="max-w-6xl mx-auto px-4">
+                        <div class="mb-8">
+                            <h2 class="text-3xl font-bold text-gray-800 mb-2">Available Food Near You</h2>
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                                <p class="text-gray-600 mb-4 sm:mb-0">Showing food donations within 5 miles of your location</p>
+                                <div class="flex items-center">
+                                    <label class="mr-2 text-gray-700">Filter:</label>
+                                    <select id="foodFilter" class="px-3 py-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                                        <option value="all">All Types</option>
+                                        <option value="fresh">Fresh</option>
+                                        <option value="cooked">Cooked</option>
+                                        <option value="packaged">Packaged</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="foodList">
+                            <!-- Food cards will be dynamically inserted here -->
+                            <div class="food-card bg-gray-50 rounded-lg overflow-hidden shadow-md transition duration-300">
+                                <div class="h-40 bg-green-100 flex items-center justify-center">
+                                    <i class="fas fa-utensils text-green-500 text-4xl"></i>
+                                </div>
+                                <div class="p-4">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <h3 class="font-bold text-lg text-gray-800">Fresh Vegetables</h3>
+                                        <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Fresh</span>
+                                    </div>
+                                    <p class="text-gray-600 mb-3">Assorted seasonal vegetables from local farm</p>
+                                    <div class="flex items-center text-sm text-gray-500 mb-3">
+                                        <i class="fas fa-weight-hanging mr-1"></i>
+                                        <span>~5 kg</span>
+                                    </div>
+                                    <div class="flex items-center text-sm text-gray-500 mb-4">
+                                        <i class="fas fa-map-marker-alt mr-1"></i>
+                                        <span>1.2 miles away</span>
+                                    </div>
+                                    <button class="w-full py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition">
+                                        Request Pickup
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="food-card bg-gray-50 rounded-lg overflow-hidden shadow-md transition duration-300">
+                                <div class="h-40 bg-blue-100 flex items-center justify-center">
+                                    <i class="fas fa-bread-slice text-blue-500 text-4xl"></i>
+                                </div>
+                                <div class="p-4">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <h3 class="font-bold text-lg text-gray-800">Bakery Items</h3>
+                                        <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">Bakery</span>
+                                    </div>
+                                    <p class="text-gray-600 mb-3">Assorted breads and pastries from local bakery</p>
+                                    <div class="flex items-center text-sm text-gray-500 mb-3">
+                                        <i class="fas fa-weight-hanging mr-1"></i>
+                                        <span>20 units</span>
+                                    </div>
+                                    <div class="flex items-center text-sm text-gray-500 mb-4">
+                                        <i class="fas fa-map-marker-alt mr-1"></i>
+                                        <span>0.8 miles away</span>
+                                    </div>
+                                    <button class="w-full py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition">
+                                        Request Pickup
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="food-card bg-gray-50 rounded-lg overflow-hidden shadow-md transition duration-300">
+                                <div class="h-40 bg-yellow-100 flex items-center justify-center">
+                                    <i class="fas fa-drumstick-bite text-yellow-500 text-4xl"></i>
+                                </div>
+                                <div class="p-4">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <h3 class="font-bold text-lg text-gray-800">Cooked Meals</h3>
+                                        <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">Cooked</span>
+                                    </div>
+                                    <p class="text-gray-600 mb-3">Prepared meals from community kitchen</p>
+                                    <div class="flex items-center text-sm text-gray-500 mb-3">
+                                        <i class="fas fa-weight-hanging mr-1"></i>
+                                        <span>15 servings</span>
+                                    </div>
+                                    <div class="flex items-center text-sm text-gray-500 mb-4">
+                                        <i class="fas fa-map-marker-alt mr-1"></i>
+                                        <span="2.1 miles away</span>
+                                    </div>
+                                    <button class="w-full py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition">
+                                        Request Pickup
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Profile Page -->
+            <div id="profile" class="page hidden">
+                <section class="py-12 bg-white">
+                    <div class="max-w-6xl mx-auto px-4">
+                        <div class="flex flex-col md:flex-row gap-8">
+                            <!-- Profile Sidebar -->
+                            <div class="md:w-1/3">
+                                <div class="bg-gray-50 p-6 rounded-lg shadow-sm mb-6">
+                                    <div class="flex flex-col items-center">
+                                        <div class="w-24 h-24 rounded-full bg-green-500 flex items-center justify-center text-white text-3xl font-bold mb-4">
+                                            JD
+                                        </div>
+                                        <h3 class="text-xl font-bold text-gray-800 mb-1" id="profileName">John Doe</h3>
+                                        <p class="text-gray-600 mb-4" id="memberSince">Member since June 2023</p>
+                                        <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+                                            <div class="bg-green-500 h-2 rounded-full" style="width: 75%"></div>
+                                        </div>
+                                        <p class="text-sm text-gray-600">Community Impact: 75%</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-gray-50 p-6 rounded-lg shadow-sm">
+                                    <h4 class="font-bold text-gray-800 mb-4">Quick Stats</h4>
+                                    <div class="space-y-4">
+                                        <div>
+                                            <div class="flex justify-between mb-1">
+                                                <span class="text-gray-700">Donations Made</span>
+                                                <span class="font-semibold" id="donationsCount">12</span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="flex justify-between mb-1">
+                                                <span class="text-gray-700">Food Received</span>
+                                                <span class="font-semibold" id="receiptsCount">8</span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="flex justify-between mb-1">
+                                                <span class="text-gray-700">People Helped</span>
+                                                <span class="font-semibold" id="peopleHelped">45+</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Main Profile Content -->
+                            <div class="md:w-2/3">
+                                <div class="bg-gray-50 p-6 rounded-lg shadow-sm mb-6">
+                                    <div class="flex border-b mb-6">
+                                        <button class="activity-tab active mr-4 pb-2" onclick="showActivities('all')">All Activities</button>
+                                        <button class="activity-tab mr-4 pb-2" onclick="showActivities('donations')">Donations</button>
+                                        <button class="activity-tab pb-2" onclick="showActivities('receipts')">Receipts</button>
+                                    </div>
+                                    
+                                    <div id="allActivities">
+                                        <h3 class="font-semibold text-gray-800 mb-4">Recent Activities</h3>
+                                        <div class="space-y-4" id="activitiesList">
+                                            <!-- Activities will be dynamically inserted here -->
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Feedback Section -->
+                                <div class="bg-gray-50 p-6 rounded-lg shadow-sm">
+                                    <h3 class="font-semibold text-gray-800 mb-4 border-b pb-2">Leave Feedback</h3>
+                                    <form id="feedbackForm">
+                                        <div class="mb-4">
+                                            <label class="block text-gray-700 mb-2">Your Experience</label>
+                                            <div class="flex mb-2">
+                                                <button type="button" class="star-rating" data-rating="1"><i class="far fa-star text-yellow-400 text-xl"></i></button>
+                                                <button type="button" class="star-rating" data-rating="2"><i class="far fa-star text-yellow-400 text-xl"></i></button>
+                                                <button type="button" class="star-rating" data-rating="3"><i class="far fa-star text-yellow-400 text-xl"></i></button>
+                                                <button type="button" class="star-rating" data-rating="4"><i class="far fa-star text-yellow-400 text-xl"></i></button>
+                                                <button type="button" class="star-rating" data-rating="5"><i class="far fa-star text-yellow-400 text-xl"></i></button>
+                                            </div>
+                                            <input type="hidden" id="ratingValue" value="0">
+                                        </div>
+                                        <div class="mb-4">
+                                            <label class="block text-gray-700 mb-2" for="feedbackType">Feedback Type</label>
+                                            <select id="feedbackType" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                                                <option value="general">General Feedback</option>
+                                                <option value="donation">Donation Experience</option>
+                                                <option value="receiving">Receiving Experience</option>
+                                                <option value="suggestion">Suggestion</option>
+                                                <option value="issue">Report an Issue</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-4">
+                                            <label class="block text-gray-700 mb-2" for="feedbackText">Your Feedback</label>
+                                            <textarea id="feedbackText" rows="4" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
+                                        </div>
+                                        <button type="button" onclick="submitFeedback()" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition">
+                                            Submit Feedback
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-gray-800 text-white py-12">
+            <div class="max-w-6xl mx-auto px-4">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    <div>
+                        <div class="flex items-center mb-4">
+                            <i class="fas fa-utensils text-green-500 text-2xl mr-2"></i>
+                            <span class="font-bold text-xl">ShareEats</span>
+                        </div>
+                        <p class="text-gray-400">Connecting surplus food with those who need it most.</p>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
+                        <ul class="space-y-2">
+                            <li><a href="#" onclick="showPage('home')" class="text-gray-400 hover:text-white transition">Home</a></li>
+                            <li><a href="#" onclick="showPage('donate')" class="text-gray-400 hover:text-white transition">Donate</a></li>
+                            <li><a href="#" onclick="showPage('receive')" class="text-gray-400 hover:text-white transition">Receive</a></li>
+                            <li><a href="#" onclick="showPage('profile')" class="text-gray-400 hover:text-white transition">Profile</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-semibold mb-4">Resources</h4>
+                        <ul class="space-y-2">
+                            <li><a href="#" class="text-gray-400 hover:text-white transition">Food Safety Guidelines</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white transition">Community Partners</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white transition">Volunteer Opportunities</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white transition">FAQ</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-semibold mb-4">Contact Us</h4>
+                        <ul class="space-y-2">
+                            <li class="flex items-center">
+                                <i class="fas fa-envelope mr-2 text-gray-400"></i>
+                                <span>contact@shareeats.org</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-phone mr-2 text-gray-400"></i>
+                                <span>(123) 456-7890</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-map-marker-alt mr-2 text-gray-400"></i>
+                                <span>123 Food Share St, City</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                    <p>&copy; 2023 ShareEats. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+
+        <script>
+            // Track current user state
+            let currentUser = null;
+            let isLoggedIn = false;
+            let authType = 'login'; // 'login' or 'register'
+            
+            // Sample data for food donations
+            const sampleFoodDonations = [
+                {
+                    id: 1,
+                    name: "Fresh Vegetables",
+                    type: "fresh",
+                    description: "Assorted seasonal vegetables from local farm",
+                    quantity: 5,
+                    unit: "kg",
+                    distance: "1.2 miles away",
+                    image: "vegetables"
+                },
+                {
+                    id: 2,
+                    name: "Bakery Items",
+                    type: "bakery",
+                    description: "Assorted breads and pastries from local bakery",
+                    quantity: 20,
+                    unit: "units",
+                    distance: "0.8 miles away",
+                    image: "bakery"
+                },
+                {
+                    id: 3,
+                    name: "Cooked Meals",
+                    type: "cooked",
+                    description: "Prepared meals from community kitchen",
+                    quantity: 15,
+                    unit: "servings",
+                    distance: "2.1 miles away",
+                    image: "meals"
+                },
+                {
+                    id: 4,
+                    name: "Dairy Products",
+                    type: "dairy",
+                    description: "Milk, cheese, and yogurt",
+                    quantity: 8,
+                    unit: "units",
+                    distance: "1.5 miles away",
+                    image: "dairy"
+                },
+                {
+                    id: 5,
+                    name: "Packaged Goods",
+                    type: "packaged",
+                    description: "Canned and dry goods",
+                    quantity: 12,
+                    unit: "units",
+                    distance: "3.0 miles away",
+                    image: "packaged"
+                }
+            ];
+            
+            // User activities (donations and receipts)
+            let userActivities = [
+                {
+                    type: "donation",
+                    id: 1,
+                    name: "Fresh Vegetables",
+                    description: "Assorted seasonal vegetables from local farm",
+                    quantity: 5,
+                    unit: "kg",
+                    date: "2 days ago",
+                    recipient: "Sarah",
+                    status: "completed"
+                },
+                {
+                    type: "donation",
+                    id: 2,
+                    name: "Bakery Items",
+                    description: "Assorted breads and pastries from local bakery",
+                    quantity: 20,
+                    unit: "units",
+                    date: "1 week ago",
+                    recipient: "Food Bank",
+                    status: "completed"
+                },
+                {
+                    type: "receipt",
+                    id: 3,
+                    name: "Cooked Meals",
+                    description: "Prepared meals from community kitchen",
+                    quantity: 15,
+                    unit: "servings",
+                    date: "3 days ago",
+                    from: "Community Kitchen",
+                    status: "completed"
+                },
+                {
+                    type: "receipt",
+                    id: 4,
+                    name: "Fruits",
+                    description: "Assorted fresh fruits",
+                    quantity: 8,
+                    unit: "units",
+                    date: "2 weeks ago",
+                    from: "Local Grocery",
+                    status: "completed"
+                }
+            ];
+            
+            // DOM ready
+            document.addEventListener('DOMContentLoaded', function() {
+                // Initialize the home page
+                showPage('home');
+                
+                // Set up star rating interaction
+                setupStarRating();
+                
+                // Set up food filter
+                document.getElementById('foodFilter').addEventListener('change', function() {
+                    filterFoodDonations(this.value);
+                });
+            });
+            
+            // Show a specific page
+            function showPage(pageId) {
+                // Hide all pages
+                document.querySelectorAll('.page').forEach(page => {
+                    page.classList.add('hidden');
+                });
+                
+                // Show the requested page
+                document.getElementById(pageId).classList.remove('hidden');
+                
+                // Update active nav link
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                    link.classList.remove('text-green-500');
+                    link.classList.add('text-gray-600');
+                });
+                
+                // If not logged in and trying to access protected pages, show login
+                if (!isLoggedIn && (pageId === 'donate' || pageId === 'receive' || pageId === 'profile')) {
+                    showAuthModal('login');
+                    showPage('home');
+                    return;
+                }
+                
+                // Set active nav link
+                const activeLink = document.querySelector(`a[onclick="showPage('${pageId}')"]`);
+                if (activeLink) {
+                    activeLink.classList.add('active', 'text-green-500');
+                    activeLink.classList.remove('text-gray-600');
+                }
+                
+                // Special initialization for certain pages
+                if (pageId === 'receive') {
+                    renderFoodDonations(sampleFoodDonations);
+                } else if (pageId === 'profile' && isLoggedIn) {
+                    renderUserActivities('all');
+                    updateProfileStats();
+                }
+            }
+            
+            // Toggle mobile menu
+            function toggleMobileMenu() {
+                const menu = document.getElementById('mobileMenu');
+                menu.classList.toggle('hidden');
+            }
+            
+            // Show auth modal
+            function showAuthModal(type) {
+                authType = type;
+                const modal = document.getElementById('authModal');
+                const title = document.getElementById('authModalTitle');
+                const button = document.getElementById('authButton');
+                const toggleText = document.getElementById('authToggle');
+                
+                if (type === 'login') {
+                    title.textContent = 'Login';
+                    button.textContent = 'Login';
+                    document.getElementById('registerFields').classList.add('hidden');
+                    toggleText.innerHTML = 'Don\'t have an account? <button type="button" onclick="toggleAuthType()" class="text-green-500 hover:underline">Register</button>';
+                } else {
+                    title.textContent = 'Register';
+                    button.textContent = 'Register';
+                    document.getElementById('registerFields').classList.remove('hidden');
+                    toggleText.innerHTML = 'Already have an account? <button type="button" onclick="toggleAuthType()" class="text-green-500 hover:underline">Login</button>';
+                }
+                
+                modal.classList.remove('hidden');
+            }
+            
+            // Hide auth modal
+            function hideAuthModal() {
+                document.getElementById('authModal').classList.add('hidden');
+                // Clear form
+                document.getElementById('authForm').reset();
+            }
+            
+            // Toggle between login and register
+            function toggleAuthType() {
+                if (authType === 'login') {
+                    showAuthModal('register');
+                } else {
+                    showAuthModal('login');
+                }
+            }
+            
+            // Handle authentication
+            function handleAuth() {
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                
+                if (authType === 'register') {
+                    const name = document.getElementById('name').value;
+                    
+                    if (!name || !email || !password) {
+                        alert('Please fill in all fields');
+                        return;
+                    }
+                    
+                    // In a real app, this would be an API call
+                    currentUser = {
+                        name: name,
+                        email: email,
+                        joinDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+                    };
+                    isLoggedIn = true;
+                    
+                    alert(`Welcome to ShareEats, ${name}! You can now donate or receive food.`);
+                    hideAuthModal();
+                    updateUIForLoggedInUser();
+                    showPage('home');
+                } else {
+                    // Login logic
+                    if (!email || !password) {
+                        alert('Please enter both email and password');
+                        return;
+                    }
+                    
+                    // For demo purposes, we'll just set a default user
+                    currentUser = {
+                        name: 'John Doe',
+                        email: email,
+                        joinDate: 'June 2023'
+                    };
+                    isLoggedIn = true;
+                    
+                    hideAuthModal();
+                    updateUIForLoggedInUser();
+                    showPage('home');
+                }
+            }
+            
+            // Update UI when user logs in
+            function updateUIForLoggedInUser() {
+                // Change login/register buttons to profile
+                const authButtons = document.querySelectorAll('button[onclick^="showAuthModal"]');
+                authButtons.forEach(btn => {
+                    btn.classList.add('hidden');
+                });
+                
+                // Show profile button if not already there
+                const profileButtons = document.querySelectorAll('a[onclick="showPage(\'profile\')"]');
+                profileButtons.forEach(btn => {
+                    btn.classList.remove('hidden');
+                });
+                
+                // Update profile name and member since
+                if (currentUser) {
+                    document.getElementById('profileName').textContent = currentUser.name;
+                    document.getElementById('memberSince').textContent = `Member since ${currentUser.joinDate}`;
+                }
+            }
+            
+            // Submit donation form
+            function submitDonation() {
+                if (!isLoggedIn) {
+                    showAuthModal('login');
+                    return;
+                }
+                
+                const foodName = document.getElementById('foodName').value;
+                const foodType = document.getElementById('foodType').value;
+                const quantity = document.getElementById('quantity').value;
+                const quantityUnit = document.getElementById('quantityUnit').value;
+                const expiry = document.getElementById('expiry').value;
+                const location = document.getElementById('location').value;
+                const notes = document.getElementById('notes').value;
+                
+                if (!foodName || !foodType || !quantity || !expiry || !location) {
+                    alert('Please fill in all required fields');
+                    return;
+                }
+                
+                // Create a new donation activity
+                const newDonation = {
+                    type: "donation",
+                    id: userActivities.length + 1,
+                    name: foodName,
+                    description: notes || "No additional notes provided",
+                    quantity: quantity,
+                    unit: quantityUnit,
+                    date: "Just now",
+                    recipient: "Pending",
+                    status: "pending"
+                };
+                
+                // Add to user activities
+                userActivities.unshift(newDonation);
+                
+                // In a real app, this would submit to a backend
+                alert(`Thank you for your donation of ${quantity} ${quantityUnit} of ${foodName}! We've listed it for others to find.`);
+                
+                // Reset form
+                document.getElementById('donateForm').reset();
+                
+                // Update profile stats
+                updateProfileStats();
+                
+                // Show receive page
+                showPage('receive');
+            }
+            
+            // Render food donations
+            function renderFoodDonations(donations) {
+                const container = document.getElementById('foodList');
+                container.innerHTML = '';
+                
+                donations.forEach(donation => {
+                    const card = document.createElement('div');
+                    card.className = 'food-card bg-gray-50 rounded-lg overflow-hidden shadow-md transition duration-300';
+                    
+                    // Determine color based on type
+                    let bgColor = 'green';
+                    let icon = 'fa-utensils';
+                    
+                    switch(donation.type) {
+                        case 'bakery':
+                            bgColor = 'blue';
+                            icon = 'fa-bread-slice';
+                            break;
+                        case 'cooked':
+                            bgColor = 'yellow';
+                            icon = 'fa-drumstick-bite';
+                            break;
+                        case 'dairy':
+                            bgColor = 'indigo';
+                            icon = 'fa-cheese';
+                            break;
+                        case 'packaged':
+                            bgColor = 'purple';
+                            icon = 'fa-box-open';
+                            break;
+                    }
+                    
+                    card.innerHTML = `
+                        <div class="h-40 bg-${bgColor}-100 flex items-center justify-center">
+                            <i class="fas ${icon} text-${bgColor}-500 text-4xl"></i>
+                        </div>
+                        <div class="p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-bold text-lg text-gray-800">${donation.name}</h3>
+                                <span class="bg-${bgColor}-100 text-${bgColor}-800 text-xs px-2 py-1 rounded-full capitalize">${donation.type}</span>
+                            </div>
+                            <p class="text-gray-600 mb-3">${donation.description}</p>
+                            <div class="flex items-center text-sm text-gray-500 mb-3">
+                                <i class="fas fa-weight-hanging mr-1"></i>
+                                <span>~${donation.quantity} ${donation.unit}</span>
+                            </div>
+                            <div class="flex items-center text-sm text-gray-500 mb-4">
+                                <i class="fas fa-map-marker-alt mr-1"></i>
+                                <span>${donation.distance}</span>
+                            </div>
+                            <button onclick="requestFood(${donation.id})" class="w-full py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition">
+                                Request Pickup
+                            </button>
+                        </div>
+                    `;
+                    
+                    container.appendChild(card);
+                });
+            }
+            
+            // Filter food donations
+            function filterFoodDonations(filter) {
+                if (filter === 'all') {
+                    renderFoodDonations(sampleFoodDonations);
+                } else {
+                    const filtered = sampleFoodDonations.filter(d => d.type === filter);
+                    renderFoodDonations(filtered);
+                }
+            }
+            
+            // Request food
+            function requestFood(id) {
+                if (!isLoggedIn) {
+                    showAuthModal('login');
+                    return;
+                }
+                
+                const donation = sampleFoodDonations.find(d => d.id === id);
+                if (donation) {
+                    // Create a new receipt activity
+                    const newReceipt = {
+                        type: "receipt",
+                        id: userActivities.length + 1,
+                        name: donation.name,
+                        description: donation.description,
+                        quantity: donation.quantity,
+                        unit: donation.unit,
+                        date: "Just now",
+                        from: "Anonymous Donor",
+                        status: "pending"
+                    };
+                    
+                    // Add to user activities
+                    userActivities.unshift(newReceipt);
+                    
+                    alert(`You've requested ${donation.name}. The donor will contact you to arrange pickup.`);
+                    
+                    // Update profile stats
+                    updateProfileStats();
+                }
+            }
+            
+            // Render user activities
+            function renderUserActivities(filter) {
+                const container = document.getElementById('activitiesList');
+                container.innerHTML = '';
+                
+                // Filter activities based on type
+                let activitiesToShow = userActivities;
+                if (filter === 'donations') {
+                    activitiesToShow = userActivities.filter(a => a.type === 'donation');
+                } else if (filter === 'receipts') {
+                    activitiesToShow = userActivities.filter(a => a.type === 'receipt');
+                }
+                
+                // Sort by date (newest first)
+                activitiesToShow.sort((a, b) => {
+                    // For demo, we'll just sort by ID since we don't have real dates
+                    return b.id - a.id;
+                });
+                
+                // Render each activity
+                activitiesToShow.forEach(activity => {
+                    const activityElement = document.createElement('div');
+                    activityElement.className = 'flex items-start p-3 bg-white rounded-md';
+                    
+                    // Determine icon and color based on activity type
+                    let icon = 'fa-utensils';
+                    let bgColor = 'green';
+                    let textColor = 'green';
+                    
+                    if (activity.type === 'donation') {
+                        icon = 'fa-hand-holding-heart';
+                        bgColor = 'blue';
+                        textColor = 'blue';
+                    } else if (activity.type === 'receipt') {
+                        icon = 'fa-utensils';
+                        bgColor = 'green';
+                        textColor = 'green';
+                    }
+                    
+                    // Create activity HTML
+                    activityElement.innerHTML = `
+                        <div class="bg-${bgColor}-100 p-2 rounded-md mr-4">
+                            <i class="fas ${icon} text-${textColor}-600"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex justify-between">
+                                <h4 class="font-medium text-gray-800">${activity.name}</h4>
+                                <span class="text-sm text-gray-500">${activity.date}</span>
+                            </div>
+                            <p class="text-sm text-gray-600">${activity.quantity} ${activity.unit} • ${activity.type === 'donation' ? 'To: ' + activity.recipient : 'From: ' + activity.from}</p>
+                            <div class="mt-2">
+                                <span class="inline-block bg-${activity.status === 'completed' ? 'green' : 'yellow'}-100 text-${activity.status === 'completed' ? 'green' : 'yellow'}-800 text-xs px-2 py-1 rounded-full capitalize">
+                                    ${activity.status}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                    
+                    container.appendChild(activityElement);
+                });
+            }
+            
+            // Update profile statistics
+            function updateProfileStats() {
+                const donationsCount = userActivities.filter(a => a.type === 'donation').length;
+                const receiptsCount = userActivities.filter(a => a.type === 'receipt').length;
+                const peopleHelped = donationsCount * 3; // Estimate 3 people helped per donation
+                
+                document.getElementById('donationsCount').textContent = donationsCount;
+                document.getElementById('receiptsCount').textContent = receiptsCount;
+                document.getElementById('peopleHelped').textContent = peopleHelped + '+';
+                
+                // Update impact percentage (simple calculation for demo)
+                const impactPercentage = Math.min(100, Math.floor((donationsCount + receiptsCount) / 30 * 100));
+                document.querySelector('.bg-green-500').style.width = `${impactPercentage}%`;
+                document.querySelector('.bg-green-500').nextElementSibling.textContent = `Community Impact: ${impactPercentage}%`;
+            }
+            
+            // Show activities based on filter
+            function showActivities(filter) {
+                // Update active tab
+                document.querySelectorAll('.activity-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                event.target.classList.add('active');
+                
+                // Render activities
+                renderUserActivities(filter);
+            }
+            
+            // Set up star rating
+            function setupStarRating() {
+                const stars = document.querySelectorAll('.star-rating');
+                stars.forEach(star => {
+                    star.addEventListener('click', function() {
+                        const rating = parseInt(this.getAttribute('data-rating'));
+                        document.getElementById('ratingValue').value = rating;
+                        
+                        // Update star display
+                        stars.forEach((s, index) => {
+                            if (index < rating) {
+                                s.innerHTML = '<i class="fas fa-star text-yellow-400 text-xl"></i>';
+                            } else {
+                                s.innerHTML = '<i class="far fa-star text-yellow-400 text-xl"></i>';
+                            }
+                        });
+                    });
+                });
+            }
+            
+            // Submit feedback
+            function submitFeedback() {
+                const rating = document.getElementById('ratingValue').value;
+                const type = document.getElementById('feedbackType').value;
+                const text = document.getElementById('feedbackText').value;
+                
+                if (!rating || rating == 0) {
+                    alert('Please provide a rating');
+                    return;
+                }
+                
+                if (!text) {
+                    alert('Please provide your feedback');
+                    return;
+                }
+                
+                alert('Thank you for your feedback! We appreciate your input.');
+                document.getElementById('feedbackForm').reset();
+                
+                // Reset stars
+                const stars = document.querySelectorAll('.star-rating');
+                stars.forEach(star => {
+                    star.innerHTML = '<i class="far fa-star text-yellow-400 text-xl"></i>';
+                });
+                document.getElementById('ratingValue').value = '0';
+            }
+        </script>
+    </body>
+</html>
